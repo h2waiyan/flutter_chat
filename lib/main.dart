@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_app/chat.dart';
 import 'package:flutter_app/login.dart';
+import 'package:flutter_app/verify.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -27,8 +28,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: FirebaseAuth.instance.currentUser != null
-          ? const Chat()
-          : const Login(),
+          ? const MyHomePage()
+          : const MyHomePage(),
     );
   }
 }
@@ -43,6 +44,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController emailCtrl = TextEditingController();
   TextEditingController passCtrl = TextEditingController();
+
+  final auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,15 +77,25 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 50,
                   onPressed: () async {
                     try {
-                      final user = await FirebaseAuth.instance
-                          .createUserWithEmailAndPassword(
+                      UserCredential user =
+                          await auth.createUserWithEmailAndPassword(
                               email: emailCtrl.text, password: passCtrl.text);
+
+                      if (auth.currentUser!.emailVerified == false) {
+                        auth.currentUser!.sendEmailVerification();
+                      }
+
                       if (context.mounted) {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text("Registered Successfully"),
                           backgroundColor: Colors.green,
                         ));
+
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return const VerifyPage();
+                        }));
                       }
                     } on FirebaseAuthException catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
