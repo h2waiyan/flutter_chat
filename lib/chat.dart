@@ -24,6 +24,9 @@ class _ChatState extends State<Chat> {
     print(FirebaseAuth.instance.currentUser!.email);
   }
 
+  var auth = FirebaseAuth.instance;
+  var firestore = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +35,7 @@ class _ChatState extends State<Chat> {
         actions: [
           IconButton(
               onPressed: () {
-                FirebaseAuth.instance.signOut();
+                auth.signOut();
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return const Login();
                 }));
@@ -44,9 +47,7 @@ class _ChatState extends State<Chat> {
         child: Column(
           children: [
             StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('messages')
-                    .snapshots(),
+                stream: firestore.collection('messages').snapshots(),
                 builder: ((context, snapshot) {
                   List<MessageBubble> messagesWidget = [];
 
@@ -55,8 +56,7 @@ class _ChatState extends State<Chat> {
                       messagesWidget.add(MessageBubble(
                         text: message['message'],
                         sender: message['sender'],
-                        isMe: FirebaseAuth.instance.currentUser!.email ==
-                                message['sender']
+                        isMe: auth.currentUser!.email == message['sender']
                             ? true
                             : false,
                       ));
@@ -77,10 +77,8 @@ class _ChatState extends State<Chat> {
                 ),
                 ElevatedButton(
                     onPressed: () async {
-                      await FirebaseFirestore.instance
-                          .collection('messages')
-                          .add({
-                        "sender": "julio@gmail.com",
+                      await firestore.collection('messages').add({
+                        "sender": auth.currentUser!.email,
                         "message": msgCtrl.text,
                         "photo": "../image/s.jpg"
                       });
