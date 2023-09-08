@@ -91,6 +91,12 @@ class _LoginState extends State<Login> {
                             email: emailCtrl.text, password: passCtrl.text);
 
                     print(response);
+                    if (context.mounted) {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return const Chat();
+                      }));
+                    }
                   } on FirebaseAuthException catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(e.message!),
